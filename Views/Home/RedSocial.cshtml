@@ -1,0 +1,124 @@
+@model List<TP07.Models.Publicacion>
+@{
+    ViewData["Title"] = "Red Social";
+}
+
+<!-- Definir URLs para JavaScript -->
+<script>
+    const urlAgregarLike = '@Url.Action("AgregarLike", "Home")';
+    const urlAgregarComentario = '@Url.Action("AgregarComentario", "Home")';
+</script>
+
+<div class="social-feed-container">
+    <!-- Header -->
+    <div class="social-header">
+        <div class="header-content">
+            <h1>📱 Red Social</h1>
+            <div class="header-actions">
+                <span class="user-greeting">Bienvenido, @ViewBag.nombreUsuario</span>
+                <a href="@Url.Action("CrearPublicacion", "Home")" class="btn-create">➕ Nueva Publicación</a>
+                <a href="@Url.Action("Logout", "Home")" class="btn-logout">🚪 Cerrar Sesión</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feed de Publicaciones -->
+    <div class="feed-container">
+        @if (Model == null || Model.Count == 0)
+        {
+            <div class="no-publications">
+                <p>No hay publicaciones aún. ¡Sé el primero en publicar!</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var pub in Model)
+            {
+                var usuario = BD.ObtenerUsuarioPorId(pub.IdUsuario);
+                var comentarios = BD.ObtenerComentarios(pub.Id);
+                var cantidadLikes = BD.ObtenerCantidadLikes(pub.Id);
+                var usuarioActual = ViewBag.usuarioActual as TP07.Models.Usuario;
+                var yaLike = usuarioActual != null ? BD.VerificarLike(pub.Id, usuarioActual.Id) : false;
+
+                <div class="publication-card">
+                    <!-- Header de la Publicación -->
+                    <div class="pub-header">
+                        <div class="pub-user-info">
+                            <div class="user-avatar">@usuario.nombreUsuario[0].ToString().ToUpper()</div>
+                            <div class="user-details">
+                                <strong>@usuario.nombre @usuario.apellido</strong>
+                                <small>@@@usuario.nombreUsuario</small>
+                                <small class="pub-date">@DateTime.ParseExact(pub.fechaPublicacion, "MM/dd/yyyy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture).ToString("dd/MM/yyyy HH:mm")</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Imagen -->
+                    @if (!string.IsNullOrEmpty(pub.imagen))
+                    {
+                        <div class="pub-image">
+                            <img src="@pub.imagen" alt="@pub.titulo" />
+                        </div>
+                    }
+
+                    <!-- Contenido -->
+                    <div class="pub-content">
+                        <h3>@pub.titulo</h3>
+                        <p>@pub.descripcion</p>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="pub-stats">
+                        <span class="likes-count" id="likes-count-@pub.Id">❤️ @cantidadLikes Me Gusta@(cantidadLikes != 1 ? "s" : "")</span>
+                        <span class="comments-count" id="comments-count-@pub.Id">💬 @comentarios.Count Comentario@(comentarios.Count != 1 ? "s" : "")</span>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="pub-actions">
+                        <button class="action-button @(yaLike ? "liked" : "")" 
+                                id="like-btn-@pub.Id"
+                                onclick="toggleLike(@pub.Id)"
+                                style="width: 50%;">
+                            @(yaLike ? "❤️ Me Encanta" : "🤍 Me Gusta")
+                        </button>
+                        <button class="action-button" onclick="toggleComments(@pub.Id)" style="width: 50%;">💬 Comentar</button>
+                    </div>
+
+                    <!-- Comentarios -->
+                    <div class="comments-section" id="comments-@pub.Id" style="display: none;">
+                        <div class="comments-list" id="comments-list-@pub.Id">
+                            @if (comentarios.Count > 0)
+                            {
+                                @foreach (var com in comentarios)
+                                {
+                                    var usuarioComentario = BD.ObtenerUsuarioPorId(com.IdUsuarioComenta);
+                                    <div class="comment">
+                                        <div class="comment-header">
+                                            <strong>@usuarioComentario.nombre @usuarioComentario.apellido</strong>
+                                            <small>@@@usuarioComentario.nombreUsuario</small>
+                                        </div>
+                                        <p class="comment-text">@com.Texto</p>
+                                        <small class="comment-date">@DateTime.ParseExact(com.FechaComentario, "MM/dd/yyyy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture).ToString("dd/MM/yyyy HH:mm")</small>
+                                    </div>
+                                }
+                            }
+                        </div>
+
+                        <!-- Formulario de Comentario -->
+                        <form onsubmit="agregarComentario(event, @pub.Id)" class="comment-form">
+                            <div class="comment-input-wrapper">
+                                <input type="text" 
+                                       name="texto" 
+                                       id="comment-input-@pub.Id"
+                                       placeholder="Escribe un comentario..." 
+                                       class="comment-input" 
+                                       required />
+                                <button type="submit" class="comment-submit">➤</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

@@ -1,0 +1,45 @@
+@model TP07.Models.Publicacion
+@{
+    ViewData["Title"] = "Crear Publicación";
+}
+
+<div class="crear-publicacion-container">
+    <div class="publicacion-card">
+        <h2>Crear Nueva Publicación</h2>
+        
+        @if (ViewBag.Error != null)
+        {
+            <div class="error-message">
+                <h2>Error</h2>
+                <p>@ViewBag.Error</p>
+            </div>
+        }
+        
+        @if (ViewBag.Mensaje != null)
+        {
+            <div class="success-message">
+                <p>@ViewBag.Mensaje</p>
+            </div>
+        }
+        
+        <form asp-action="CrearPublicacion" asp-controller="Home" method="post" enctype="multipart/form-data" class="publicacion-form">
+            <div class="form-group">
+                <label for="titulo">Título</label>
+                <input asp-for="titulo" required />
+            </div>
+            
+            <div class="form-group">
+                <label for="descripcion">Descripción</label>
+                <textarea asp-for="descripcion" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="imagenArchivo">Imagen de la publicación</label>
+                <input type="file" name="imagenArchivo" id="imagenArchivo" accept="image/*" required />
+            </div>
+            
+            <button type="submit" class="publicacion-btn">Publicar</button>
+            <a href="@Url.Action("RedSocial", "Home")" style="text-align: center; margin-top: 15px; color: #667eea; text-decoration: none; display: block;">Volver a Red Social</a>
+        </form>
+    </div>
+</div>

@@ -1,4 +1,4 @@
-namespace programacion.Models;
+namespace TP07.Models;
 
 public class ErrorViewModel
 {
